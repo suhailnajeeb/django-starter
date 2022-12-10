@@ -205,25 +205,47 @@ Django's test framework provides some extentsions on top of PYthon's `unittest.T
 
 In our case, since there is no database involved, we will use the `SimpleTestCase` class. 
 
-### Test 1: Checking if the two URLs are returning HTTP 200 status code which is the standard response for a successful HTTP request
+### Test 1
+
+Checking if the page is accessible (responds with a 200 status code).
 
 ```python
 # pages/tests.py
-
-from django.test import SimpleTestCase
-
-class HomepageTests(SimpleTestCase):
-    def test_url_exists_at_correct_location(self):
+...
+class HomePageTests(SimpleTestCase):
+    def test_home_page_status_code(self):
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
+```
+### Test 2
 
-class AboutpageTests(SimpleTestCase):
-    def test_url_exists_at_correct_location(self):
-        response = self.client.get('/about/')
+Checking if the page is accessible by URL name. 
+
+```python
+# pages/tests.py
+...
+class HomePageTests(SimpleTestCase):
+    ...
+    def test_url_available_by_name(self):
+        response = self.client.get(reverse('home'))
         self.assertEqual(response.status_code, 200)
 ```
 
-**Running Tests:** `python manage.py test`
+### Test 3 
 
-If you see an error such as `AssertionError: 301 != 200` it’s likely you forgot to add the trailing slash to `"/about"` above. The web browser knows to automatically add a slash if it’s not provided, but that causes a `301` redirect, not a `200` success response!
+Checking if the correct template is being used: 
 
+```python
+# pages/tests.py
+...
+class HomePageTests(SimpleTestCase):
+    ...
+    def test_template_name_correct(self):
+        response = self.client.get(reverse('home'))
+        self.assertTemplateUsed(response, 'home.html')
+    
+    def test_template_content(self):
+        response = self.client.get(reverse('home'))
+        self.assertContains(resonse, '<h1>Hopepage</h1>')
+
+```
