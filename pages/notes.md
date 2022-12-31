@@ -249,3 +249,143 @@ class HomePageTests(SimpleTestCase):
         self.assertContains(resonse, '<h1>Hopepage</h1>')
 
 ```
+
+# Deploying to Heroku
+
+In order to deploy the app to the cloud, an easy way is to use Heroku. Heroku is a cloud platform as a service (PaaS) that enables developers to build, run, and operate applications entirely in the cloud.
+
+First we need to initialize a git repository in the folder: 
+
+```bash
+$ git init
+$ git status
+$ git add .
+$ git commit -m "Initial commit"
+```
+
+We can add a github remote to the repository: 
+
+```bash
+$ git remote add origin url-to-repo.git
+```
+
+Then we need to create an account on Heroku and install the heroku CLI. Installing 
+the heroku CLI on mac is easy if we have `brew` installed: 
+
+```bash
+$ brew tap heroku/brew && brew install heroku
+```
+
+Then we can login to heroku: 
+
+```bash
+$ heroku login
+```
+
+## Deployment Checklist
+
+Here is a checklist of things to do before deploying the app to Heroku:
+
+- [ ] install `gunicorn`
+- [ ] create a `requirements.txt` file
+- [ ] update `ALLOWED_HOSTS` in `django_project/settings.py`
+- [ ] create a `Procfile`
+- [ ] create a `runtime.txt` file
+
+### Install `gunicorn`
+
+Gunicorn is a production-ready web server that can be used to serve Django apps. It is a Python WSGI HTTP server for UNIX. 
+
+```bash
+(.venv) > python -m pip install gunicorn==20.1.0
+```
+
+### Create a `requirements.txt` file
+
+The `requirements.txt` file contains a list of all the Python packages that are required to run the app. 
+
+```bash
+(.venv) > pip freeze > requirements.txt
+```
+
+### Update `ALLOWED_HOSTS` in `django_project/settings.py`
+
+The `ALLOWED_HOSTS` setting is used to specify which hosts are allowed to access the app. 
+
+```python
+# django_project/settings.py
+...
+ALLOWED_HOSTS = ["*"]
+```
+
+### Create a `Procfile`
+
+The `Procfile` is used to specify the commands that are executed by the app on startup. 
+
+```bash
+# Procfile
+web: gunicorn django_project.wsgi --log-file -
+```
+
+### Create a `runtime.txt` file
+
+The `runtime.txt` file is used to specify the Python version that is used by the app. 
+
+```bash
+# runtime.txt
+python-3.10.9
+```
+
+I actually had an issue with the python runtime version. Had to lookup the version on heroku and use that.
+
+## Deploying to Heroku
+
+Now we can create a new app on Heroku: 
+
+```bash
+$ heroku create
+```
+
+We can check if the git remotes are set up correctly: 
+
+```bash
+$ git remote -v
+```
+
+Command to add git remote origin in case anything goes wrong: 
+
+```bash
+git remote add heroku https://git.heroku.com/your-app-name.git
+```
+
+We need to add some additional heroku configurations, which is to tell Heroku to ignore static files like CSS and JavaScript. 
+
+```bash
+$ heroku config:set DISABLE_COLLECTSTATIC=1
+```
+
+Also, we need to set the buildpack to Python: 
+
+```bash
+$ heroku buildpacks:set heroku/python
+```
+
+Now we can push the code to Heroku: 
+
+```bash
+$ git push heroku main/master
+```
+
+The last step is to make the app live. As websites grow in traffic they need additional Heroku services but for our basic app we can use the free tier. 
+
+```bash
+$ heroku ps:scale web=1
+```
+
+To open the app in the browser: 
+
+```bash
+$ heroku open
+```
+
+This app is now live at this URL: https://mysterious-eyrie-32412.herokuapp.com/
